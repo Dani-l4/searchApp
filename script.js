@@ -24,13 +24,15 @@ document.addEventListener('DOMContentLoaded', async function() {
   renderPosts(posts);
 
   function onSearch(e) {
-    let value = e.target.value;
+    let value = e.target.value.trim().split(' ');
     let searchResult = posts;
-    
-    if (value !== '') {
-      searchResult = posts.filter((post) => {
-        return post.title.includes(value) || post.body.includes(value);
-      })
+
+    if (value.length) {
+      for (let word of value) {
+        searchResult = searchResult.filter((post) => {
+          return post.title.includes(word) || post.body.includes(word);
+        })  
+      }
     }
 
     renderPosts(searchResult);
