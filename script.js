@@ -1,5 +1,3 @@
-function onSearchChange(e) {}
-
 document.addEventListener('DOMContentLoaded', async function() {
   function fetchPosts() {
     return fetch('https://jsonplaceholder.typicode.com/posts')
@@ -8,6 +6,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   }
   
   function renderPosts(posts) {
+    $posts.innerHTML = '';
     posts.forEach((post) => {
       let post_card = `
       <li class="card" id="${post.id}">
@@ -16,16 +15,34 @@ document.addEventListener('DOMContentLoaded', async function() {
           ${post.body}
         </div>
       </li>`;
-  
-      $posts.insertAdjacentHTML('beforeend', post_card)
+      $posts.insertAdjacentHTML('beforeend', post_card);
     })
   }
+
   let posts = await fetchPosts();
   const $posts = document.querySelector('.posts');
   renderPosts(posts);
 
+  function onSearch(e) {
+    let value = e.target.value;
+    let searchResult = posts;
+    
+    if (value !== '') {
+      searchResult = posts.filter((post) => {
+        return post.title.includes(value) || post.body.includes(value);
+      })
+    }
+
+    renderPosts(searchResult);
+
+    items = Array.from($posts.getElementsByTagName('li')).slice(0)
+
+    createPageButtons();
+    showPage(currentPage)
+  }
+
   const $search = document.querySelector('.search');
-  $search.addEventListener('change', onSearchChange)
+  $search.addEventListener('keyup', onSearch)
 
   const itemsPerPage = 8;
   let currentPage = 0;
