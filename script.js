@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     $posts.innerHTML = '';
     posts.forEach((post) => {
       let post_card = `
-      <li class="card" id="${post.id}">
+      <li class="card" id="${post.id}" data-id="${post.id}" data-title="${post.title}" data-body="${post.body}">
         <div class="title">${post.title}</div>
         <div class="body">
           ${post.body}
@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       </li>`;
       $posts.insertAdjacentHTML('beforeend', post_card);
     })
+    document.dispatchEvent(new Event('fetchedNbuilded'));
   }
 
   let posts = await fetchPosts();
