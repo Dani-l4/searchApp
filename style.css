@@ -47,11 +47,17 @@ html{
   text-align: center;
   cursor: pointer;
 }
-.title {
+.card__title {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 10px;
   padding: 10px;
+  flex-grow: 1;
+}
+.card__body{
+  padding: 10px;
+  font-size: 18px;
+  flex-grow: 1;
 }
 .pagination {
   text-align: center;
@@ -70,11 +76,7 @@ html{
   background-color: #007bff;
   color: white;
 }
-.body{
-  padding: 10px;
-  font-size: 18px;
-}
-.body.lock{
+body.lock{
   overflow: hidden;
 }
 .modal{

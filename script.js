@@ -10,18 +10,27 @@ document.addEventListener('DOMContentLoaded', async function() {
     posts.forEach((post) => {
       let post_card = `
       <li class="card" id="${post.id}" data-id="${post.id}" data-title="${post.title}" data-body="${post.body}">
-        <div class="title">${post.title}</div>
-        <div class="body">
+        <div class="card__title">${post.title}</div>
+        <div class="card__body">
           ${post.body}
         </div>
       </li>`;
       $posts.insertAdjacentHTML('beforeend', post_card);
     })
+
+    items = Array.from($posts.getElementsByTagName('li'))
     setCardsClickEvent();
+
+    createPageButtons();
+    showPage(currentPage)
   }
 
   let posts = await fetchPosts();
   const $posts = document.querySelector('.posts');
+  const itemsPerPage = 8;
+  let currentPage = 0;
+  let items
+
   renderPosts(posts);
 
   function onSearch(e) {
@@ -37,19 +46,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     renderPosts(searchResult);
-
-    items = Array.from($posts.getElementsByTagName('li'))
-
-    createPageButtons();
-    showPage(currentPage)
   }
 
   const $search = document.querySelector('.search');
   $search.addEventListener('keyup', onSearch)
-
-  const itemsPerPage = 8;
-  let currentPage = 0;
-  let items = Array.from($posts.getElementsByTagName('li'))
 
   function showPage(page) {
     const startIndex = page * itemsPerPage;
@@ -90,9 +90,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     })
   }
 
-  createPageButtons();
-  showPage(currentPage);
-
   // MODAL ==================
 
   const $modal = document.getElementById('modal');
@@ -106,6 +103,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   function closeModal() {
     document.body.classList.remove('lock');
     $modal.classList.remove('open');
+    $form.reset();
   }
 
   $modal.addEventListener('click', (e) => {
@@ -121,10 +119,8 @@ document.addEventListener('DOMContentLoaded', async function() {
   })
 
   function setCardsClickEvent() {
-    let cards = document.querySelectorAll('.card');
-    
-    for (let card of cards){
-      card.addEventListener('click', editPost)
+    for (let item of items){
+      item.addEventListener('click', editPost)
     }
   }
 
@@ -133,9 +129,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const $postId = $form.elements['post_id'];
     const $postTitle = $form.elements['post_title'];
     const $postBody = $form.elements['post_body'];
-  
-    $postId.value = card.dataset.id;
-    $postTitle.value = card.dataset.title;
+
+    $postId.setAttribute('value', card.dataset.id);
+    $postTitle.setAttribute('value', card.dataset.title);
     $postBody.value = card.dataset.body;
   
     $postBody.style.height = $postBody.scrollHeight + 'px';
@@ -144,5 +140,54 @@ document.addEventListener('DOMContentLoaded', async function() {
   
     e.preventDefault()
   }
+
+  // UD (Update Delete)
+
+  const $update_btn = document.querySelector('.form__submit_btn');
+  const $delete_btn = document.querySelector('.form__delete_btn');
+
+  $update_btn.addEventListener('click', function () {
+    const postId = $form.elements.post_id.value;
+    const postTitle = $form.elements.post_title.value;
+    const postBody = $form.elements.post_body.value;
+
+    closeModal();
+
+    fetch(`https://jsonplaceholder.typicode.com/posts/${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({
+        title: postTitle,
+        body: postBody,
+      }),
+      headers: {
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+    })
+    .then(res => res.json())
+    .then(patchedPost => {
+      const patchedPostIndex = posts.findIndex((post) => post.id === patchedPost.id);
+      posts[patchedPostIndex] = patchedPost;
+      renderPosts(posts);
+    });
+  })
+  
+  $delete_btn.addEventListener('click', function() {
+    const postId = $form.elements.post_id.value;
+
+    closeModal();
+
+    fetch(`https://jsonplaceholder.typicode.com/posts/${postId}`, {
+      method: 'DELETE'
+    })
+      .then(res => {
+        if(res.ok) {
+          const deletedPostIndex = posts.findIndex((post) => post.id == postId);
+          posts.splice(deletedPostIndex, 1);
+          renderPosts(posts);
+        } else {
+          console.log('Something went wrong :(');
+        }
+      })
+  })
   
 })
